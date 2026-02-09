@@ -9,62 +9,71 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap');
         
-        body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
-        }
+        body { font-family: 'Helvetica', 'Arial', sans-serif; }
 
-        #receipt-content {
+        /* The Receipt Container */
+        #receipt-wrap {
             width: 380px;
-            color: #000;
-            line-height: 1.4;
             background-color: white;
+            padding: 20px;
+            margin: 0 auto;
         }
 
         .signature-font { font-family: 'Dancing Script', cursive; }
-        input, select { background: transparent; border-radius: 0; }
         
-        /* Ensures PDF captures the full height */
-        .pdf-container {
-            width: 380px;
-            margin: 0 auto;
+        /* Input styling to look clean on PDF */
+        input, select { 
+            border: none;
+            border-bottom: 1px solid #f3f4f6;
+            outline: none;
+            width: 100%;
+            padding: 2px 0;
         }
+        
+        /* Remove arrows from number input */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        @media print { .no-print { display: none; } }
     </style>
 </head>
-<body class="bg-zinc-100 flex flex-col items-center py-6 min-h-screen">
+<body class="bg-zinc-200 py-10">
 
-    <div class="bg-white shadow-2xl rounded-lg overflow-hidden w-[400px] mb-10 no-print">
-        <div id="receipt-content" class="p-8 mx-auto">
-            <div class="text-center border-b border-dashed border-gray-400 pb-4 mb-4">
-                <img src="panific.logo.png" alt="Panific Logo" class="w-48 mx-auto mb-3 object-contain">
-                <p class="text-[11px] font-bold uppercase">Accra, Ghana</p>
+    <div class="max-w-[420px] mx-auto bg-white shadow-2xl rounded-xl overflow-hidden">
+        
+        <div id="receipt-wrap">
+            <div class="text-center border-b-2 border-double border-gray-200 pb-4 mb-4">
+                <img src="panific.logo.png" alt="Panific Logo" class="w-48 mx-auto mb-2 object-contain">
+                <p class="text-[11px] font-bold">Accra, Ghana</p>
                 <p class="text-[11px]">info@panific.com</p>
-                <p class="text-[11px] mt-2">------------------------------------------</p>
-                <p class="text-sm font-bold mt-1 tracking-widest uppercase">Sales Receipt</p>
+                <div class="text-[14px] font-black mt-3 tracking-widest uppercase border-y border-black py-1">
+                    Sales Receipt
+                </div>
             </div>
 
-            <div class="space-y-4 text-[13px]">
-                <div class="flex justify-between">
-                    <span>DATE:</span>
-                    <span id="current-date" class="font-bold border-b border-gray-100"></span>
+            <div class="space-y-3 text-[13px]">
+                <div class="flex justify-between items-center">
+                    <span class="font-bold">DATE:</span>
+                    <input type="date" id="current-date" class="text-right font-bold !w-32">
                 </div>
                 <div class="flex justify-between">
-                    <span>RECEIPT NO:</span>
-                    <span id="receipt-no" class="font-bold border-b border-gray-100"></span>
+                    <span class="font-bold">RECEIPT NO:</span>
+                    <input type="text" id="receipt-no" class="text-right font-bold !w-32">
                 </div>
 
                 <div class="pt-2">
-                    <label class="block text-[10px] text-gray-500 font-bold uppercase">Customer Name</label>
-                    <input type="text" id="cust-name" class="w-full border-b border-gray-200 py-1 outline-none font-bold" placeholder="Required">
+                    <label class="block text-[10px] text-gray-400 font-bold uppercase">Customer Name</label>
+                    <input type="text" id="cust-name" class="font-bold text-gray-800" placeholder="Enter Name">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[10px] text-gray-500 font-bold uppercase">Amount (GH₵)</label>
-                        <input type="number" id="amt-num" class="w-full text-lg font-bold border-b border-gray-200 py-1 outline-none" placeholder="0.00">
+                        <label class="block text-[10px] text-gray-400 font-bold uppercase">Amount (GH₵)</label>
+                        <input type="number" id="amt-num" class="text-lg font-black text-blue-700" placeholder="0.00">
                     </div>
                     <div>
-                        <label class="block text-[10px] text-gray-500 font-bold uppercase">Payment Type</label>
-                        <select id="pay-type" class="w-full text-sm font-bold border-b border-gray-200 py-2 outline-none" onchange="toggleCheque(this.value)">
+                        <label class="block text-[10px] text-gray-400 font-bold uppercase">Payment Type</label>
+                        <select id="pay-type" class="font-bold text-gray-700 h-[34px]" onchange="toggleCheque(this.value)">
                             <option value="MOMO">MOMO</option>
                             <option value="CASH">CASH</option>
                             <option value="CHEQUE">CHEQUE</option>
@@ -72,56 +81,57 @@
                     </div>
                 </div>
 
-                <div id="cheque-field" class="hidden">
-                    <label class="block text-[10px] text-gray-500 font-bold uppercase">Cheque Number</label>
-                    <input type="text" id="cheque-no" class="w-full border-b border-gray-200 py-1 outline-none font-bold" placeholder="Enter Cheque #">
+                <div id="cheque-field" class="hidden animate-pulse">
+                    <label class="block text-[10px] text-gray-400 font-bold uppercase">Cheque Number</label>
+                    <input type="text" id="cheque-no" class="font-bold text-gray-800" placeholder="Ref #">
                 </div>
 
-                <div>
-                    <label class="block text-[10px] text-gray-500 font-bold uppercase">Amount in Words</label>
-                    <p id="amt-words" class="text-[11px] italic leading-tight mt-1 text-gray-800 min-h-[30px] border-b border-gray-50 pb-1">Zero Ghana Cedis</p>
+                <div class="bg-gray-50 p-2 rounded">
+                    <label class="block text-[9px] text-gray-400 font-bold uppercase">Amount in Words</label>
+                    <p id="amt-words" class="text-[11px] italic font-medium leading-tight text-gray-700 break-words">Zero Ghana Cedis</p>
                 </div>
 
                 <div class="pt-2">
-                    <label class="block text-[10px] text-gray-500 font-bold uppercase">Salesperson Name</label>
-                    <input type="text" id="sales-name" class="w-full border-b border-gray-200 py-1 outline-none text-xs" placeholder="Your Name" oninput="updateSignature(this.value)">
+                    <label class="block text-[10px] text-gray-400 font-bold uppercase">Salesperson</label>
+                    <input type="text" id="sales-name" class="text-xs" placeholder="Type name for signature" oninput="updateSig(this.value)">
                 </div>
 
-                <div class="pt-8 flex flex-col items-center">
-                    <div class="text-center w-full">
-                        <p id="sig-display" class="signature-font text-2xl mb-0 text-zinc-800">Sales Staff</p>
-                        <div class="w-32 h-[1px] bg-black mx-auto"></div>
-                        <p class="text-[10px] uppercase font-bold mt-1">Authorized Signature</p>
+                <div class="pt-8 text-center">
+                    <div class="inline-block">
+                        <p id="sig-display" class="signature-font text-2xl text-gray-800 leading-none">Sales Staff</p>
+                        <div class="w-40 h-[1px] bg-black mt-1"></div>
+                        <p class="text-[9px] uppercase font-bold mt-1">Authorized Signature</p>
                     </div>
-                    <p class="text-[10px] mt-8 font-bold italic">*** Quality You Can Taste ***</p>
+                    
+                    <div class="mt-8 pt-4 border-t border-gray-100">
+                        <p class="text-[11px] font-bold text-gray-800">Your partner for premium F&B brands</p>
+                        <p class="text-[10px] text-gray-400 mt-1">Thank you for your patronage!</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="p-6 bg-zinc-50 border-t border-zinc-200 flex flex-col gap-3">
-            <button onclick="generatePOS()" class="w-full bg-zinc-900 text-white py-4 rounded-xl font-bold uppercase text-xs tracking-widest active:scale-95 transition-all">
+        <div class="p-6 bg-zinc-900 space-y-3 no-print">
+            <button onclick="generatePDF()" class="w-full bg-white text-black py-4 rounded-lg font-bold uppercase text-xs tracking-widest hover:bg-gray-100 transition shadow-lg">
                 Download & Share PDF
-            </button>
-            <button onclick="window.location.reload()" class="w-full text-zinc-400 text-[10px] uppercase tracking-widest font-bold">
-                Clear & Reset
             </button>
         </div>
     </div>
 
     <script>
-        document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-GB');
-        document.getElementById('receipt-no').innerText = 'PN-' + Math.floor(100000 + Math.random() * 900000);
+        // Set Defaults
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('current-date').value = today;
+        document.getElementById('receipt-no').value = 'PN-' + Math.floor(100000 + Math.random() * 900000);
 
         function toggleCheque(val) {
-            const field = document.getElementById('cheque-field');
-            val === 'CHEQUE' ? field.classList.remove('hidden') : field.classList.add('hidden');
+            document.getElementById('cheque-field').style.display = (val === 'CHEQUE') ? 'block' : 'none';
         }
 
-        function updateSignature(val) {
+        function updateSig(val) {
             document.getElementById('sig-display').innerText = val || "Sales Staff";
         }
 
-        // Expanded Amount to Words Logic (Handles up to 999,999,999)
         function numToWords(num) {
             const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
             const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
@@ -143,23 +153,25 @@
             document.getElementById('amt-words').innerText = numToWords(e.target.value || 0);
         });
 
-        function generatePOS() {
-            const element = document.getElementById('receipt-content');
+        function generatePDF() {
+            const element = document.getElementById('receipt-wrap');
             const customer = document.getElementById('cust-name').value || 'Customer';
             
-            // Adjusting options for better resolution and full-content capture
+            // PDF formatting fixed to prevent text bleed and cutting
             const opt = {
-                margin: 0,
-                filename: `Panific_${customer}.pdf`,
-                image: { type: 'jpeg', quality: 1.0 },
+                margin: [10, 0, 10, 0], // Top, Left, Bottom, Right
+                filename: `Panific_${customer}_Receipt.pdf`,
+                image: { type: 'jpeg', quality: 1 },
                 html2canvas: { 
-                    scale: 3, 
-                    useCORS: true, 
-                    letterRendering: true,
-                    windowWidth: 380
+                    scale: 2, 
+                    useCORS: true,
+                    logging: false,
+                    letterRendering: true
                 },
-                jsPDF: { unit: 'mm', format: [80, 180], orientation: 'portrait' } 
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
             };
+
+            // Using A4 container with centered content ensures no content is "out of layout"
             html2pdf().set(opt).from(element).save();
         }
     </script>
