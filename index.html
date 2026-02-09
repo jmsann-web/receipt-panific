@@ -7,56 +7,64 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Dancing+Script:wght@600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&display=swap');
         
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+        }
+
         #receipt-content {
             width: 380px;
-            font-family: 'Courier Prime', monospace;
             color: #000;
-            line-height: 1.2;
+            line-height: 1.4;
+            background-color: white;
         }
+
         .signature-font { font-family: 'Dancing Script', cursive; }
-        input, select { background: transparent; }
-        /* Professional POS look for the PDF */
-        .pdf-mode { padding: 20px !important; }
+        input, select { background: transparent; border-radius: 0; }
+        
+        /* Ensures PDF captures the full height */
+        .pdf-container {
+            width: 380px;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body class="bg-zinc-100 flex flex-col items-center py-6 min-h-screen">
 
-    <div class="bg-white shadow-2xl rounded-lg overflow-hidden w-[400px] mb-10">
-        
-        <div id="receipt-content" class="bg-white p-8 mx-auto">
+    <div class="bg-white shadow-2xl rounded-lg overflow-hidden w-[400px] mb-10 no-print">
+        <div id="receipt-content" class="p-8 mx-auto">
             <div class="text-center border-b border-dashed border-gray-400 pb-4 mb-4">
                 <img src="panific.logo.png" alt="Panific Logo" class="w-48 mx-auto mb-3 object-contain">
-                <p class="text-[10px] uppercase font-bold">Accra, Ghana</p>
-                <p class="text-[10px]">info@panific.com</p>
-                <p class="text-[10px] mt-2">------------------------------------------</p>
+                <p class="text-[11px] font-bold uppercase">Accra, Ghana</p>
+                <p class="text-[11px]">info@panific.com</p>
+                <p class="text-[11px] mt-2">------------------------------------------</p>
                 <p class="text-sm font-bold mt-1 tracking-widest uppercase">Sales Receipt</p>
             </div>
 
-            <div class="space-y-3 text-[12px]">
+            <div class="space-y-4 text-[13px]">
                 <div class="flex justify-between">
                     <span>DATE:</span>
-                    <span id="current-date" class="font-bold"></span>
+                    <span id="current-date" class="font-bold border-b border-gray-100"></span>
                 </div>
                 <div class="flex justify-between">
                     <span>RECEIPT NO:</span>
-                    <span id="receipt-no" class="font-bold"></span>
+                    <span id="receipt-no" class="font-bold border-b border-gray-100"></span>
                 </div>
 
-                <div class="border-t border-dashed border-gray-300 pt-4 mt-4">
-                    <label class="block text-[9px] text-gray-500 font-bold uppercase">Customer Name</label>
-                    <input type="text" id="cust-name" class="w-full border-b border-gray-100 py-1 outline-none font-bold" placeholder="Customer Name">
+                <div class="pt-2">
+                    <label class="block text-[10px] text-gray-500 font-bold uppercase">Customer Name</label>
+                    <input type="text" id="cust-name" class="w-full border-b border-gray-200 py-1 outline-none font-bold" placeholder="Required">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[9px] text-gray-500 font-bold uppercase">Amount (GH₵)</label>
-                        <input type="number" id="amt-num" class="w-full text-lg font-bold border-b border-gray-100 py-1 outline-none" placeholder="0.00">
+                        <label class="block text-[10px] text-gray-500 font-bold uppercase">Amount (GH₵)</label>
+                        <input type="number" id="amt-num" class="w-full text-lg font-bold border-b border-gray-200 py-1 outline-none" placeholder="0.00">
                     </div>
                     <div>
-                        <label class="block text-[9px] text-gray-500 font-bold uppercase">Payment Type</label>
-                        <select id="pay-type" class="w-full text-sm font-bold border-b border-gray-100 py-2 outline-none">
+                        <label class="block text-[10px] text-gray-500 font-bold uppercase">Payment Type</label>
+                        <select id="pay-type" class="w-full text-sm font-bold border-b border-gray-200 py-2 outline-none" onchange="toggleCheque(this.value)">
                             <option value="MOMO">MOMO</option>
                             <option value="CASH">CASH</option>
                             <option value="CHEQUE">CHEQUE</option>
@@ -64,21 +72,26 @@
                     </div>
                 </div>
 
+                <div id="cheque-field" class="hidden">
+                    <label class="block text-[10px] text-gray-500 font-bold uppercase">Cheque Number</label>
+                    <input type="text" id="cheque-no" class="w-full border-b border-gray-200 py-1 outline-none font-bold" placeholder="Enter Cheque #">
+                </div>
+
                 <div>
-                    <label class="block text-[9px] text-gray-500 font-bold uppercase">Amount in Words</label>
-                    <p id="amt-words" class="text-[11px] italic leading-tight mt-1 text-gray-800 min-h-[24px]">Zero Ghana Cedis</p>
+                    <label class="block text-[10px] text-gray-500 font-bold uppercase">Amount in Words</label>
+                    <p id="amt-words" class="text-[11px] italic leading-tight mt-1 text-gray-800 min-h-[30px] border-b border-gray-50 pb-1">Zero Ghana Cedis</p>
                 </div>
 
-                <div class="border-t border-dashed border-gray-300 pt-4 mt-4">
-                    <label class="block text-[9px] text-gray-500 font-bold uppercase">Salesperson Name</label>
-                    <input type="text" id="sales-name" class="w-full border-b border-gray-100 py-1 outline-none text-xs" placeholder="Your Name" oninput="updateSignature(this.value)">
+                <div class="pt-2">
+                    <label class="block text-[10px] text-gray-500 font-bold uppercase">Salesperson Name</label>
+                    <input type="text" id="sales-name" class="w-full border-b border-gray-200 py-1 outline-none text-xs" placeholder="Your Name" oninput="updateSignature(this.value)">
                 </div>
 
-                <div class="pt-10 flex flex-col items-center">
+                <div class="pt-8 flex flex-col items-center">
                     <div class="text-center w-full">
                         <p id="sig-display" class="signature-font text-2xl mb-0 text-zinc-800">Sales Staff</p>
                         <div class="w-32 h-[1px] bg-black mx-auto"></div>
-                        <p class="text-[9px] uppercase font-bold mt-1 tracking-tighter">Authorized Signature</p>
+                        <p class="text-[10px] uppercase font-bold mt-1">Authorized Signature</p>
                     </div>
                     <p class="text-[10px] mt-8 font-bold italic">*** Quality You Can Taste ***</p>
                 </div>
@@ -87,7 +100,10 @@
 
         <div class="p-6 bg-zinc-50 border-t border-zinc-200 flex flex-col gap-3">
             <button onclick="generatePOS()" class="w-full bg-zinc-900 text-white py-4 rounded-xl font-bold uppercase text-xs tracking-widest active:scale-95 transition-all">
-                Download & Share Receipt
+                Download & Share PDF
+            </button>
+            <button onclick="window.location.reload()" class="w-full text-zinc-400 text-[10px] uppercase tracking-widest font-bold">
+                Clear & Reset
             </button>
         </div>
     </div>
@@ -96,38 +112,53 @@
         document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-GB');
         document.getElementById('receipt-no').innerText = 'PN-' + Math.floor(100000 + Math.random() * 900000);
 
+        function toggleCheque(val) {
+            const field = document.getElementById('cheque-field');
+            val === 'CHEQUE' ? field.classList.remove('hidden') : field.classList.add('hidden');
+        }
+
         function updateSignature(val) {
             document.getElementById('sig-display').innerText = val || "Sales Staff";
         }
 
-        function convertToWords(num) {
-            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
-            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
-            const teens = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
-            if (num == 0) return "Zero Ghana Cedis";
-            let n = Math.floor(num);
-            let str = '';
-            if (n >= 1000) { str += ones[Math.floor(n / 1000)] + " Thousand "; n %= 1000; }
-            if (n >= 100) { str += ones[Math.floor(n / 100)] + " Hundred "; n %= 100; }
-            if (n >= 20) { str += tens[Math.floor(n / 10)] + " "; n %= 10; } 
-            else if (n >= 10) { str += teens[n - 10] + " "; n = 0; }
-            if (n > 0) str += ones[n] + " ";
-            return str.trim() + " Ghana Cedis";
+        // Expanded Amount to Words Logic (Handles up to 999,999,999)
+        function numToWords(num) {
+            const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+            const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+            function makeWords(n) {
+                if (n < 20) return a[n];
+                if (n < 100) return b[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + a[n % 10] : '');
+                if (n < 1000) return a[Math.floor(n / 100)] + 'Hundred ' + (n % 100 !== 0 ? 'and ' + makeWords(n % 100) : '');
+                if (n < 1000000) return makeWords(Math.floor(n / 1000)) + 'Thousand ' + (n % 1000 !== 0 ? makeWords(n % 1000) : '');
+                return makeWords(Math.floor(n / 1000000)) + 'Million ' + (n % 1000000 !== 0 ? makeWords(n % 1000000) : '');
+            }
+
+            const val = Math.floor(num);
+            if (val === 0) return "Zero Ghana Cedis";
+            return (makeWords(val) + "Ghana Cedis").replace(/\s+/g, ' ').trim();
         }
 
         document.getElementById('amt-num').addEventListener('input', (e) => {
-            document.getElementById('amt-words').innerText = convertToWords(e.target.value || 0);
+            document.getElementById('amt-words').innerText = numToWords(e.target.value || 0);
         });
 
         function generatePOS() {
             const element = document.getElementById('receipt-content');
             const customer = document.getElementById('cust-name').value || 'Customer';
+            
+            // Adjusting options for better resolution and full-content capture
             const opt = {
                 margin: 0,
                 filename: `Panific_${customer}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 3 },
-                jsPDF: { unit: 'mm', format: [80, 160], orientation: 'portrait' }
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: { 
+                    scale: 3, 
+                    useCORS: true, 
+                    letterRendering: true,
+                    windowWidth: 380
+                },
+                jsPDF: { unit: 'mm', format: [80, 180], orientation: 'portrait' } 
             };
             html2pdf().set(opt).from(element).save();
         }
